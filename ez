@@ -1,0 +1,1252 @@
+-- ============================================================
+-- SLOT ESP (Animal Podium blue box outlines)
+-- Wrapped in start/stop so the ESP tab toggle can control it.
+-- ============================================================
+local _slotESPPlots = workspace:WaitForChild("Plots")
+local _slotESPColor = Color3.fromRGB(55, 185, 255)
+local _slotESP_FLOOR_TOL, _slotESP_DEDUP_R = 8, 10
+local _slotESPHolder = nil
+local _slotESPWatchConns = {}
+local _slotESPRunning = false
+
+local function _slotESPBaseBounds(slot)
+	local target = slot:FindFirstChild("Base") or slot
+	if target:IsA("Model") then
+		local ok, cf, sz = pcall(function() return target:GetBoundingBox() end)
+		if ok then return cf, sz end
+	elseif target:IsA("BasePart") then
+		return target.CFrame, target.Size
+	end
+end
+local function _slotESPMakeBox(cf, size)
+	if not _slotESPHolder then return end
+	local a = Instance.new("Part")            local p = math.clamp(ragLeft / math.max(ragTotalDuration or ragLeft, 0.1), 0, 1)
+            hudName.Text = string.format("RAGDOLL - %.1fs", ragLeft)
+            hudProgressFill.Size = UDim2.new(p, 0, 1, 0)
+            hudPercent.Text = string.format("%.1fs", ragLeft)
+            hudPercent.TextColor3 = RAG_ORANGE
+        else
+            hudName.Text = "RAGDOLL"
+            hudProgressFill.Size = UDim2.new(1, 0, 1, 0)
+            hudPercent.Text = "..."
+            hudPercent.TextColor3 = RAG_ORANGE
+        end
+        return
+    else
+        hudStroke.Color = STEALBAR.STROKE
+        hudGlow.Color = STEALBAR.GLOW
+        hudPercent.TextColor3 = STEALBAR.TEXT
+    end
+
+    if not (Config and Config.AutoStealEnabled) then
+        hudName.Text = "Disabled"sRealObstacle = false
+            for _, heightOffset in ipairs(heightsToCheck) do
+                local rayOrigin = myPos + Vector3.new(0, heightOffset, 0)
+                local rayFwd = Workspace:Raycast(rayOrigin, moveDir * FLY_RAY_DIST, flyRayParams)
+                if rayFw                    -- Smooth CFrame glide to close bases to bypass anti-cheat flags
+                    local startCF = hrp.CFrame
+                    local duration = 2.5
+                    local start = tick()
+                    while tick() - start < duration and hrp.Parent do
+                        local t =r obj:IsA("SurfaceLight") then
+			SafeDestroyUltra(obj)
+		elseif obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") or obj:IsA("Explosion") then
+			SafeDestroyUltra(obj)
+		elseif obj:IsA("Animation") or obj:IsA("AnimationController") then
+			SafeDestroyUltra(obj)
+		elseif obj:IsA("BasePart") then
+			obj.CastShadow      = false
+			obj.Material        = Enum.Material.Plastic
+			obj.MaterialVariant = ""
+			obj.Reflectance     = 0
+		end
+	end)
+end
+
+function StopAnimationsUltra(animator)
+	pcall(function()
+		for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+			local isChar = false
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr.Character and animator:IsDescendantOf(plr.Character) then
+					isChar = true
+					break
+				end
+			end
+			if not isChar then
+				track:Stop()
+			end
+		end
+	end)
+end
+
+function OptimizeCharacterUltra(char)
+	if not char then return end
+	task.spawn(function()
+		task.wait(0.3)
+		for _, obj in ipairs(char:GetDescendants()) do
+			if IsClothing(obj) then
+				SafeDestroyUltra(obj)
+			else
+				CleanObjectUltra(obj)
+			end
+		end
+	end)
+end
+
+function ApplyGreySkyUltra()
+	pcall(function()
+		for _, obj in ipairs(Lighting:GetChildren()) do
+			if obj:IsA("Sky") then
+				obj:Destroy()
+			end
+		end
+		local sky        = Instance.new("Sky")
+		sky.SkyboxBk     = ""
+		sky.SkyboxDn     = ""
+		sky.SkyboxFt     = ""
+		sky.SkyboxLf     = ""
+		sky.SkyboxRt     = ""
+		sky.SkyboxUp     = ""
+		sky.CelestialBodiesShown = false
+		sky.StarCount    = 0
+		sky.Parent       = Lighting
+		-- Force a flat grey sky (blank skybox alone renders dark)
+		Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+		Lighting.ColorShift_Top = Color3.fromRGB(128, 128, 128)
+		Lighting.ColorShift_Bottom = Color3.fromRGB(128, 128, 128)
+		Lighting.FogColor = Color3.fromRGB(128, 128, 128)
+		Lighting.ClockTime = 12
+	end)
+end
+
+function OptimizeLightingUltra()
+	Lighting.GlobalShadows            = false
+	Lighting.FogEnd                   = 9e9
+	Lighting.FogStart                 = 9e9
+	Lighting.EnvironmentDiffuseScale  = 0
+	Lighting.EnvironmentSpecularScale = 0
+	Lighting.Brightness               = 1.5
+	Lighting.Ambient                  = Color3.fromRGB(60, 60, 60)
+
+	for _, v in ipairs(Lighting:GetChildren()) do
+		if v:IsA("PostEffect") and v.Name ~= "MynxxDarkTheme" then
+			pcall(function() v.Enabled = false end)
+		elseif v:IsA("Atmosphere") or v:IsA("Clouds") then
+			v:Destroy()
+		end
+	end
+	ApplyGreySkyUltra()
+end
+
+function ApplyTerrainUltra()
+	pcall(function()
+		local T = Workspace.Terrain
+		T.Decoration        = false
+		T.WaterWaveSize     = 0
+		T.WaterWaveSpeed    = 0
+		T.WaterReflectance  = 0
+		T.WaterTransparency = 1
+	end)
+end
+
+function setFPSBoostUltra(enabled)
+    Config.FPSBoostUltra = enabled
+    saveConfig()
+    setToggle("FPS Boost Ultra", enabled)
+    
+    if enabled then
+        pcall(function()
+            settings().Rendering.QualityLevel        = Enum.QualityLevel.Level01
+            settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level01
+            settings().Physics.AllowSleep = true
+        end)
+        pcall(function() settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Skip end)
+        -- Compatibility lighting = cheapest render pipeline (needs rejoin to fully revert)
+        pcall(function()
+            if sethiddenproperty then
+                sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility)
+            end
+        end)
+        pcall(setfpscap, 0)   -- 0 = unlimited FPS (was 999)
+        if Config.UnlockFPS ~= false then applyFpsCap() end
+
+        OptimizeLightingUltra()
+        ApplyTerrainUltra()
+
+        local allDesc = Workspace:GetDescendants()
+        local BATCH_SIZE = 200
+        for i = 1, #allDesc, BATCH_SIZE do
+            local batchEnd = math.min(i + BATCH_SIZE - 1, #allDesc)
+            for j = i, batchEnd do
+                local obj = allDesc[j]
+                if obj and obj.Parent then
+                    if IsProtected(obj) then
+                        -- skip forge / crafting / locked game assets
+                    elseif _G.__laser.IsLaserObject(obj) then
+                        _G.__laser.UpdateLaserObject(obj)
+                    elseif IsBase(obj) then
+                        MakeTransparentUltra(obj)
+                    elseif IsClothing(obj) then
+                        SafeDestroyUltra(obj)
+                    elseif IsInBase(obj) then
+                        -- skip
+                    elseif IsCharacterPart(obj) then
+                        -- skip
+                    elseif IsOutOfRange(obj) then
+                        SafeDestroyUltra(obj)
+                    else
+                        CleanObjectUltra(obj)
+                        StripObjectUltra(obj)
+                        if obj:IsA("Animator") then
+                            StopAnimationsUltra(obj)
+                        end
+                    end
+                end
+            end
+            if i + BATCH_SIZE <= #allDesc then task.wait() end
+        end
+
+        AddUltraConnection(Workspace.DescendantAdded:Connect(function(obj)
+            task.defer(function()
+                if not Config.FPSBoostUltra then return end
+                if IsProtected(obj) then return end
+                if _G.__laser.IsLaserObject(obj) then
+                    _G.__laser.UpdateLaserObject(obj)
+                    return
+                end
+                if IsBase(obj) then
+                    MakeTransparentUltra(obj)
+                    return
+                end
+                if IsClothing(obj) then
+                    SafeDestroyUltra(obj)
+                elseif IsInBase(obj) then
+                    -- skip
+                elseif IsCharacterPart(obj) then
+                    -- skip
+                elseif IsOutOfRange(obj) then
+                    SafeDestroyUltra(obj)
+                else
+                    CleanObjectUltra(obj)
+                    StripObjectUltra(obj)
+                    if obj:IsA("Animator") then
+                        StopAnimationsUltra(obj)
+                    end
+                end
+            end)
+        end))
+
+        AddUltraConnection(Lighting.DescendantAdded:Connect(function(obj)
+            if obj:IsA("PostEffect") and obj.Name ~= "MynxxDarkTheme" then
+                pcall(function() obj.Enabled = false end)
+            elseif obj:IsA("Atmosphere") or obj:IsA("Clouds") then
+                SafeDestroyUltra(obj)
+            end
+        end))
+
+        local MaterialService = game:GetService("MaterialService")
+        for _, obj in ipairs(MaterialService:GetChildren()) do
+            SafeDestroyUltra(obj)
+        end
+        AddUltraConnection(MaterialService.DescendantAdded:Connect(function(obj)
+            SafeDestroyUltra(obj)
+        end))
+
+        for _, plr in ipairs(Players:GetPlayers()) do
+            OptimizeCharacterUltra(plr.Character)
+            AddUltraConnection(plr.CharacterAdded:Connect(OptimizeCharacterUltra))
+        end
+
+        AddUltraConnection(Players.PlayerAdded:Connect(function(plr)
+            AddUltraConnection(plr.CharacterAdded:Connect(OptimizeCharacterUltra))
+        end))
+
+        -- GC Loop
+        AddUltraThread(function()
+            while Config.FPSBoostUltra do
+                task.wait(15)
+                pcall(function() collectgarbage("collect") end)
+            end
+        end)
+    else
+        -- Clean up all connections and threads
+        for _, conn in ipairs(_ultraConnections) do
+            if typeof(conn) == "RBXScriptConnection" then
+                conn:Disconnect()
+            end
+        end
+        _ultraConnections = {}
+        for _, thr in ipairs(_ultraThreads) do
+            pcall(function() task.cancel(thr) end)
+        end
+        _ultraThreads = {}
+
+        -- Restore Baseplates opacity
+        pcall(function()
+            for part, data in pairs(OriginalTransparency) do
+                if part and part.Parent then
+                    part.Transparency = data.trans
+                    part.CastShadow = data.shadow
+                end
+            end
+        end)
+        OriginalTransparency = {}
+
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+            settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Automatic
+            Lighting.GlobalShadows = true
+            Lighting.Brightness = 2
+            Lighting.FogEnd = 100000
+            Workspace.Terrain.WaterWaveSize = 0.15
+            Workspace.Terrain.WaterWaveSpeed = 1
+            Workspace.Terrain.WaterReflectance = 0.5
+            Workspace.Terrain.WaterTransparency = 0.3
+            Workspace.Terrain.Decoration = true
+        end)
+    end
+end
+
+-- ============================================================
+-- X-RAY
+-- ============================================================
+do -- X-RAY SCOPE
+xrayOriginalTransparencies = setmetatable({}, {__mode = "k"})
+xrayConnections = {}
+xrayLoopId = 0
+
+function setXRayTargetTransparency(instance, alphaPercent, loopId)
+    if not instance then return end
+    if loopId and loopId ~= xrayLoopId then return end   -- X-ray already turned off
+
+    local function apply(obj)
+        if _G.__laser.IsLaserObject(obj) then
+            local plot = _G.__laser.GetPlotFromObject(obj)
+            if plot and _G.__laser.IsPlotBaseOpen(plot) then
+                _G.__laser.SaveLaserOriginal(obj)
+                _G.__laser.HideLaserObject(obj)
+            end
+            return
+        end
+        if obj:IsA("BasePart") then
+            if xrayOriginalTransparencies[obj] == nil then
+                if obj.Transparency == alphaPercent then xrayOriginalTransparencies[obj] = 0
+                else xrayOriginalTransparencies[obj] = obj.Transparency end
+            end
+            local orig = xrayOriginalTransparencies[obj]
+            if orig < 1 then
+                local target = orig + (1 - orig) * alphaPercent
+                if math.abs(obj.Transparency - target) > 0.01 then obj.Transparency = target end
+            end
+        elseif obj:IsA("TextLabel") or obj:IsA("TextButton") then
+            if xrayOriginalTransparencies[obj] == nil then
+                local t, b = obj.TextTransparency, obj.BackgroundTransparency
+                if t == alphaPercent then t = 0 end
+                if b == alphaPercent then b = 0 end
+                xrayOriginalTransparencies[obj] = {text = t, bg = b}
+            end
+            local orig = xrayOriginalTransparencies[obj]
+            if orig.text < 1 then
+                local targetText = orig.text + (1 - orig.text) * alphaPercent
+                if math.abs(obj.TextTransparency - targetText) > 0.01 then obj.TextTransparency = targetText end
+            end
+            if orig.bg < 1 then
+                local targetBg = orig.bg + (1 - orig.bg) * alphaPercent
+                if math.abs(obj.BackgroundTransparency - targetBg) > 0.01 then obj.BackgroundTransparency = targetBg end
+            end
+        elseif obj:IsA("Frame") or obj:IsA("ScrollingFrame") then
+            if xrayOriginalTransparencies[obj] == nil then
+                if obj.BackgroundTransparency == alphaPercent then xrayOriginalTransparencies[obj] = 0
+                else xrayOriginalTransparencies[obj] = obj.BackgroundTransparency end
+            end
+            local orig = xrayOriginalTransparencies[obj]
+            if orig < 1 then
+                local target = orig + (1 - orig) * alphaPercent
+                if math.abs(obj.BackgroundTransparency - target) > 0.01 then obj.BackgroundTransparency = target end
+            end
+        elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+            if xrayOriginalTransparencies[obj] == nil then
+                local i, b = obj.ImageTransparency, obj.BackgroundTransparency
+                if i == alphaPercent then i = 0 end
+                if b == alphaPercent then b = 0 end
+                xrayOriginalTransparencies[obj] = {img = i, bg = b}
+            end
+            local orig = xrayOriginalTransparencies[obj]
+            if orig.img < 1 then
+                local targetImg = orig.img + (1 - orig.img) * alphaPercent
+                if math.abs(obj.ImageTransparency - targetImg) > 0.01 then obj.ImageTransparency = targetImg end
+            end
+            if orig.bg < 1 then
+                local targetBg = orig.bg + (1 - orig.bg) * alphaPercent
+                if math.abs(obj.BackgroundTransparency - targetBg) > 0.01 then obj.BackgroundTransparency = targetBg end
+            end
+        end
+    end
+
+    apply(instance)
+    local descendants = instance:GetDescendants()
+    for i, child in ipairs(descendants) do
+        apply(child)
+        if i % 300 == 0 then
+            task.wait()
+            if loopId and loopId ~= xrayLoopId then return end   -- aborted: X-ray turned off mid-apply
+        end
+    end
+end
+
+XRAY_FOLDERS = {"Base","PlotSign","FriendPanel","Cash","Decorations","Skin","Unlock","Purchases"}
+
+-- X-ray a subtree once, then keep newly-streamed parts x-rayed via a cheap
+-- DescendantAdded hook. Event-driven -> ZERO cost while nothing changes
+-- (replaces the old 1.5s full re-walk that caused the lag).
+function trackXRaySubtree(root, alphaPercent, loopId)
+    if not root then return end
+    if loopId ~= xrayLoopId then return end
+    setXRayTargetTransparency(root, alphaPercent, loopId)
+    if loopId ~= xrayLoopId then return end   -- don't re-arm a listener after X-ray was turned off
+    xrayConnections[#xrayConnections+1] = root.DescendantAdded:Connect(function(obj)
+        if loopId ~= xrayLoopId then return end
+        setXRayTargetTransparency(obj, alphaPercent, loopId)
+    end)
+end
+
+function processPlotXRay(plot, alphaPercent, loopId)
+    if not plot then return end
+    if loopId ~= xrayLoopId then return end
+
+    for _, fname in ipairs(XRAY_FOLDERS) do
+        if loopId ~= xrayLoopId then return end
+        trackXRaySubtree(plot:FindFirstChild(fname), alphaPercent, loopId)
+    end
+    if loopId ~= xrayLoopId then return end
+    -- Laser visibility is handled by the global _G.__laser monitor.
+    if loopId ~= xrayLoopId then return end
+    -- target folders that stream in after enable
+    xrayConnections[#xrayConnections+1] = plot.ChildAdded:Connect(function(child)
+        if loopId ~= xrayLoopId then return end
+        for _, fname in ipairs(XRAY_FOLDERS) do
+            if child.Name == fname then trackXRaySubtree(child, alphaPercent, loopId); break end
+        end
+    end)
+
+    local animalPodiums = plot:FindFirstChild("AnimalPodiums")
+    if animalPodiums then
+        local function processPodium(podium)
+            for _, child in ipairs(podium:GetChildren()) do
+                if child.Name == "Claim" then
+                    trackXRaySubtree(child, alphaPercent, loopId)
+                elseif child.Name == "Base" then
+                    trackXRaySubtree(child:FindFirstChild("Decorations"), alphaPercent, loopId)
+                elseif child:IsA("Model") and child.Name ~= "Decorations" then
+                    trackXRaySubtree(child, alphaPercent, loopId)
+                end
+            end
+        end
+        for _, podium in ipairs(animalPodiums:GetChildren()) do processPodium(podium) end
+        xrayConnections[#xrayConnections+1] = animalPodiums.ChildAdded:Connect(function(podium)
+            if loopId ~= xrayLoopId then return end
+            task.wait(0.1)
+            if loopId ~= xrayLoopId then return end
+            processPodium(podium)
+        end)
+    end
+end
+
+function applyTransparencyToAllPlotsXRay(alphaPercent, loopId)
+    local plotsFolder = Workspace:FindFirstChild("Plots")
+    if not plotsFolder then return end
+
+    for _, plot in ipairs(plotsFolder:GetChildren()) do
+        if loopId ~= xrayLoopId then return end
+        processPlotXRay(plot, alphaPercent, loopId)
+        task.wait()
+    end
+    -- new bases joining later
+    xrayConnections[#xrayConnections+1] = plotsFolder.ChildAdded:Connect(function(plot)
+        if loopId ~= xrayLoopId then return end
+        task.wait(0.2)
+        processPlotXRay(plot, alphaPercent, loopId)
+    end)
+end
+
+function setXRay(enabled)
+    Config.XRay = enabled
+    saveConfig()
+    setToggle("XRay", enabled)
+    setToggle("X-Ray", enabled)
+    setToggle("Xray", enabled)
+
+    -- Clean up previous connections
+    for _, conn in ipairs(xrayConnections) do
+        if typeof(conn) == "RBXScriptConnection" then
+            conn:Disconnect()
+        end
+    end
+    xrayConnections = {}
+
+    xrayLoopId = xrayLoopId + 1
+    local currentLoopId = xrayLoopId
+
+    if enabled then
+        local alphaPercent = 0.5
+        
+        task.spawn(function()
+            -- AÃˆâ„¢teptÃ„Æ’m sÃ„Æ’ se ÃƒÂ®ncarce folder-ul Plots
+            while currentLoopId == xrayLoopId and not Workspace:FindFirstChild("Plots") do
+                task.wait(0.5)
+            end
+            
+            if currentLoopId ~= xrayLoopId then return end
+            
+            -- Initial call cu un mic delay sÃ„Æ’ dÃ„Æ’m timp primelor modele sÃ„Æ’ aparÃ„Æ’
+            if currentLoopId ~= xrayLoopId then return end
+            pcall(applyTransparencyToAllPlotsXRay, alphaPercent, currentLoopId)
+            
+            -- Loop continuu Ãˆâ„¢i super-optimizat (fÃ„Æ’rÃ„Æ’ overlap de thread-uri)
+            -- (perpetual 1.5s re-walk removed; upkeep is now event-driven)
+        end)
+    else
+        -- Turn OFF instantly AND completely: swap the snapshot out atomically, then
+        -- restore every captured original in ONE synchronous pass (no task.wait
+        -- yields). This removes the old race where a restore could overlap a
+        -- re-enable and leave some parts still see-through after toggling off.
+        local snapshot = xrayOriginalTransparencies
+        xrayOriginalTransparencies = setmetatable({}, {__mode = "k"})
+        for obj, orig in pairs(snapshot) do
+            pcall(function()
+                if obj:IsA("BasePart") then
+                    obj.Transparency = orig
+                elseif obj:IsA("TextLabel") or obj:IsA("TextButton") then
+                    obj.TextTransparency = orig.text
+                    obj.BackgroundTransparency = orig.bg
+                elseif obj:IsA("Frame") or obj:IsA("ScrollingFrame") then
+                    obj.BackgroundTransparency = orig
+                elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                    obj.ImageTransparency = orig.img
+                    obj.BackgroundTransparency = orig.bg
+                end
+            end)
+        end
+        -- User setting: X-ray OFF forces bases solid even when FPS Boost Ultra hid
+        -- them. FPS Boost Ultra records each base's true transparency before hiding
+        -- it, so re-apply those originals here -> hidden bases become visible again.
+        for part, data in pairs(OriginalTransparency) do
+            if part and part.Parent and typeof(data) == "table" then
+                pcall(function() part.Transparency = data.trans end)
+            end
+        end
+        if _G.__laser and _G.__laser.RefreshAllPlotLasers then
+            pcall(_G.__laser.RefreshAllPlotLasers)
+        end
+    end
+end
+
+_G.setXRay = setXRay
+end -- END X-RAY SCOPE
+
+
+-- ============================================================
+-- ANTI BEE & DISCO
+-- ============================================================
+SharedState.ANTI_BEE_DISCO = {
+    running = false,
+    connections = {},
+    originalMoveFunction = nil,
+    controlsProtected = false,
+    badLightingNames = { Blue = true, DiscoEffect = true, BeeBlur = true, ColorCorrection = true },
+}
+SharedState.ANTI_BEE_DISCO.nuke = function(obj)
+    if not obj or not obj.Parent then return end
+    if SharedState.ANTI_BEE_DISCO.badLightingNames[obj.Name] then
+        pcall(function() obj:Destroy() end)
+    end
+end
+SharedState.ANTI_BEE_DISCO.disconnectAll = function()
+    for _, conn in ipairs(SharedState.ANTI_BEE_DISCO.connections) do
+        if typeof(conn) == "RBXScriptConnection" then conn:Disconnect() end
+    end
+    SharedState.ANTI_BEE_DISCO.connections = {}
+end
+SharedState.ANTI_BEE_DISCO.protectControls = function()
+    if SharedState.ANTI_BEE_DISCO.controlsProtected then return end
+    pcall(function()
+        local PlayerScripts = LocalPlayer.PlayerScripts
+        local PlayerModule = PlayerScripts:FindFirstChild("PlayerModule")
+        if not PlayerModule then return end
+        local Controls = require(PlayerModule):GetControls()
+        if not Controls then return end
+        local ab = SharedState.ANTI_BEE_DISCO
+        if not ab.originalMoveFunction then ab.originalMoveFunction = Controls.moveFunction end
+        local function protectedMoveFunction(self, moveVector, relativeToCamera)
+            if ab.originalMoveFunction then ab.originalMoveFunction(self, moveVector, relativeToCamera) end
+        end
+        table.insert(ab.connections, RunService.Heartbeat:Connect(function()
+            if not ab.running or not Config.AntiBeeDisco then return end
+            if _G._isTpMoving then return end
+            if Controls.moveFunction ~= protectedMoveFunction then Controls.moveFunction = protectedMoveFunction end
+        end))
+        Controls.moveFunction = protectedMoveFunction
+        ab.controlsProtected = true
+    end)
+end
+SharedState.ANTI_BEE_DISCO.restoreControls = function()
+    if not SharedState.ANTI_BEE_DISCO.controlsProtected then return end
+    pcall(function()
+        local PlayerModule = LocalPlayer.PlayerScripts:FindFirstChild("PlayerModule")
+        if not PlayerModule then return end
+        local Controls = require(PlayerModule):GetControls()
+        local ab = SharedState.ANTI_BEE_DISCO
+        if Controls and ab.originalMoveFunction then
+            Controls.moveFunction = ab.originalMoveFunction
+            ab.controlsProtected = false
+        end
+    end)
+end
+SharedState.ANTI_BEE_DISCO.blockBuzzingSound = function()
+    pcall(function()
+        local beeScript = LocalPlayer.PlayerScripts:FindFirstChild("Bee", true)
+        if beeScript then
+            local buzzing = beeScript:FindFirstChild("Buzzing")
+            if buzzing and buzzing:IsA("Sound") then
+                buzzing:Stop()
+                buzzing.Volume = 0
+            end
+        end
+    end)
+end
+SharedState.ANTI_BEE_DISCO.Enable = function()
+    local ab = SharedState.ANTI_BEE_DISCO
+    if ab.running then return end
+    ab.running = true
+    for _, inst in ipairs(Lighting:GetDescendants()) do ab.nuke(inst) end
+    table.insert(ab.connections, Lighting.DescendantAdded:Connect(function(obj)
+        if not ab.running or not Config.AntiBeeDisco then return end
+        ab.nuke(obj)
+    end))
+    ab.protectControls()
+    table.insert(ab.connections, RunService.Heartbeat:Connect(function()
+        if not ab.running or not Config.AntiBeeDisco then return end
+        ab.blockBuzzingSound()
+    end))
+    ShowNotification("ANTIBEE & DISCO", "Enabled")
+end
+SharedState.ANTI_BEE_DISCO.Disable = function()
+    local ab = SharedState.ANTI_BEE_DISCO
+    if not ab.running then return end
+    ab.running = false
+    ab.restoreControls()
+    ab.disconnectAll()
+    ShowNotification("ANTI-BEE & DISCO", "Disabled")
+end
+_G.ANTI_BEE_DISCO = SharedState.ANTI_BEE_DISCO
+if Config.AntiBeeDisco then
+    task.delay(1, function()
+        if SharedState.ANTI_BEE_DISCO.Enable then SharedState.ANTI_BEE_DISCO.Enable() end
+    end)
+end
+
+-- ============================================================
+-- AUTO BUY 
+-- ============================================================
+do -- AUTO BUY SCOPE (NOT lazy: toggleAutoBuy must exist immediately for the UI)
+autoBuyActive = false
+autoBuyRing = nil
+
+function createAutoBuyRing()
+    local existing = Workspace:FindFirstChild("XiAutoBuyRing")
+    if existing then existing:Destroy() end
+    local r = Instance.new("Part")
+    r.Name = "XiAutoBuyRing"
+    r.Shape = Enum.PartType.Cylinder
+    r.Anchored = true
+    r.CanCollide = false
+    r.CanTouch = false
+    r.CanQuery = false
+    r.CastShadow = false
+    r.Material = Enum.Material.Neon
+    r.Transparency = 0.5
+    r.Color = Theme.Accent
+    local range = Config.AutoBuyRange or 17
+    r.Size = Vector3.new(0.5, range * 2, range * 2)
+    r.Parent = Workspace
+    autoBuyRing = r
+end
+
+function destroyAutoBuyRing()
+    if autoBuyRing then autoBuyRing:Destroy(); autoBuyRing = nil end
+    local e = Workspace:FindFirstChild("XiAutoBuyRing")
+    if e then e:Destroy() end
+end
+
+_abRingFrame = 0
+RunService.Heartbeat:Connect(function()
+    if not autoBuyActive then return end
+    _abRingFrame = _abRingFrame + 1
+    if _abRingFrame < 3 then return end
+    _abRingFrame = 0
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not autoBuyRing then return end
+    local range = Config.AutoBuyRange or 17
+    autoBuyRing.Size = Vector3.new(0.5, range * 2, range * 2)
+    autoBuyRing.CFrame = (hrp.CFrame * CFrame.Angles(0, 0, math.rad(90))) + Vector3.new(0, -2.5, 0)
+end)
+
+-- Explicit assignment to the OUTER `local toggleAutoBuy` declared at line ~6899.
+-- Was previously `function toggleAutoBuy(on)` -- syntactic sugar that some
+-- contexts can mis-resolve; this form guarantees we update the outer upvalue
+-- the UI closure at line 8131 captures.
+toggleAutoBuy = function(on)
+    if on ~= nil then
+        autoBuyActive = on
+    else
+        autoBuyActive = not autoBuyActive
+    end
+    Config.AutoBuyEnabled = autoBuyActive
+    pcall(saveConfig)
+    pcall(setToggle, "Auto Buy", autoBuyActive)
+    if autoBuyActive then createAutoBuyRing() else destroyAutoBuyRing() end
+    pcall(ShowNotification, "AUTO BUY", autoBuyActive and "ENABLED" or "DISABLED")
+    if _G.AutoBuyOnToggle then
+        pcall(_G.AutoBuyOnToggle, autoBuyActive)
+    end
+end
+
+RARITY_WORDS = {
+    common = true, uncommon = true, rare = true, epic = true,
+    legendary = true, secret = true, divine = true, rainbow = true,
+    cursed = true, gold = true, diamond = true,
+}
+
+function getBrainrotName(model)
+    if not model then return "Brainrot", "" end
+    local nameFound, genFound = "", ""
+    for _, bb in ipairs(model:GetDescendants()) do
+        if bb:IsA("BillboardGui") then
+            for _, lbl in ipairs(bb:GetDescendants()) do
+                if lbl:IsA("TextLabel") and lbl.Text and lbl.Text ~= "" then
+                    local t = lbl.Text:match("^%s*(.-)%s*$")
+                    local tl = t:lower()
+                    if RARITY_WORDS[tl] then continue end
+                    if t:match("^%$[%d%.]+[KkMmBb]?/s$") then
+                        if genFound == "" then genFound = t end
+                        continue
+                    end
+                    if t:match("^%$[%d%.]+[KkMmBb]?$") then continue end
+                    if t:match("^[%d%.]+[KkMmBb]?$") then continue end
+                    if nameFound == "" and #t > 1 then nameFound = t end
+                end
+            end
+        end
+    end
+    if nameFound == "" then
+        pcall(function()
+            local info = AnimalsData[model.Name]
+            if info and info.DisplayName then
+                nameFound = info.DisplayName
+                local gv = AnimalsShared:GetGeneration(model.Name, nil, nil, nil)
+                local gt = "$" .. NumberUtils:ToString(gv) .. "/s"
+                genFound = gt
+            end
+        end)
+    end
+    if nameFound == "" then nameFound = model.Name ~= "" and model.Name or "Brainrot" end
+    return nameFound, genFound
+end
+
+function scanConveyor()
+    local results = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if not (obj:IsA("ProximityPrompt") and obj.Enabled) then continue end
+        local txt = obj.ActionText or ""
+        if not (txt == "Purchase" or txt:lower():find("purchase") or txt:lower():find("comprar")) then continue end
+        local part = obj.Parent
+        if not part then continue end
+        local realPart = (part:IsA("Attachment") and part.Parent) or part
+        if not (realPart and realPart:IsA("BasePart")) then continue end
+        local model, cur = nil, realPart
+        for _ = 1, 8 do
+            if cur and cur:IsA("Model") then model = cur; break end
+            cur = cur and cur.Parent
+        end
+        local name, gen = getBrainrotName(model)
+        table.insert(results, {
+            name = name,
+            gen = gen,
+            prompt = obj,
+            part = realPart,
+            model = model,
+            source = "ESTEIRA",
+            uid = "esteira_" .. tostring(obj),
+        })
+    end
+    return results
+end
+
+SharedState.ConveyorAnimals = {}
+function refreshConveyor()
+    local ok, found = pcall(scanConveyor)
+    if ok and found then
+        SharedState.ConveyorAnimals = found
+    end
+end
+refreshConveyor()
+_G.refreshConveyor = refreshConveyor
+
+purchaseRemote = nil
+function resolvePurchaseRemote()
+    if purchaseRemote and purchaseRemote.Parent then return purchaseRemote end
+    pcall(function()
+        local paths = {"RF/ShopService/BuyAnimal", "RF/AnimalShop/Purchase", "RE/Shop/Buy", "RF/Shop/Buy"}
+        for _, p in ipairs(paths) do
+            local ok2, r = pcall(function() return Decrypted[p] end)
+            if ok2 and r and r.Parent then
+                purchaseRemote = r
+                return
+            end
+        end
+    end)
+    return purchaseRemote
+end
+
+function firePurchaseNatural(prompt)
+    if not prompt or not prompt.Parent or not prompt.Enabled then return end
+    pcall(function()
+        if fireproximityprompt then fireproximityprompt(prompt) end
+    end)
+    task.spawn(function()
+        local remote = resolvePurchaseRemote()
+        if remote then
+            pcall(function()
+                if remote:IsA("RemoteFunction") then
+                    remote:InvokeServer(prompt.Parent)
+                elseif remote:IsA("RemoteEvent") then
+                    remote:FireServer(prompt.Parent)
+                end
+            end)
+        end
+    end)
+end
+
+carpetLockConn = nil
+function startCarpetLock()
+    if carpetLockConn then carpetLockConn:Disconnect(); carpetLockConn = nil end
+    local function ensureCarpet()
+        pcall(function()
+            local char = LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+            local toolName = (Config.TpSettings and Config.TpSettings.Tool) or "Flying Carpet"
+            if not char:FindFirstChild(toolName) then
+                local tool = LocalPlayer.Backpack:FindFirstChild(toolName)
+                if tool then hum:EquipTool(tool) end
+            end
+        end)
+    end
+    task.spawn(function()
+        for _ = 1, 15 do
+            if not autoBuyActive then break end
+            ensureCarpet()
+            task.wait(0.3)
+            local char = LocalPlayer.Character
+            local toolName = (Config.TpSettings and Config.TpSettings.Tool) or "Flying Carpet"
+            if char and char:FindFirstChild(toolName) then break end
+        end
+    end)
+    carpetLockConn = RunService.Heartbeat:Connect(function()
+        if not autoBuyActive then return end
+        ensureCarpet()
+    end)
+end
+
+function stopCarpetLock()
+    if carpetLockConn then carpetLockConn:Disconnect(); carpetLockConn = nil end
+end
+
+HOVER_HEIGHT = 5
+BUY_INTERVAL = 0.08
+DETECT_RADIUS = 17
+lockedTarget = nil
+lockedPart = nil
+lockedModel = nil
+
+function partAlive()
+    return lockedPart and lockedPart.Parent and lockedModel and lockedModel.Parent
+end
+
+function promptAlive()
+    return lockedTarget and lockedTarget.prompt and lockedTarget.prompt.Parent and lockedTarget.prompt.Enabled
+end
+
+bodyPos = nil
+function ensureBodyPos(hrp)
+    if bodyPos and bodyPos.Parent == hrp then
+        local speed = math.clamp(Config.AutoGrabSpeed or 17, 5, 100)
+        bodyPos.P = speed * 1000
+        return bodyPos
+    end
+    if bodyPos then bodyPos:Destroy() end
+    local speed = math.clamp(Config.AutoGrabSpeed or 17, 5, 100)
+    local bp = Instance.new("BodyPosition", hrp)
+    bp.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bp.P = speed * 1000
+    bp.D = 1000
+    bp.Position = hrp.Position
+    bodyPos = bp
+    return bp
+end
+
+function destroyBodyPos()
+    if bodyPos then bodyPos:Destroy(); bodyPos = nil end
+end
+
+RunService.Heartbeat:Connect(function()
+    if not autoBuyActive or not partAlive() then
+        destroyBodyPos()
+        return
+    end
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then destroyBodyPos(); return end
+    local above = lockedPart.Position + Vector3.new(0, HOVER_HEIGHT, 0)
+    local bp = ensureBodyPos(hrp)
+    bp.Position = above
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(BUY_INTERVAL)
+        if not autoBuyActive then continue end
+        if not partAlive() then continue end
+        if promptAlive() then
+            firePurchaseNatural(lockedTarget.prompt)
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.25)
+        if not autoBuyActive then
+            lockedTarget = nil
+            lockedPart = nil
+            lockedModel = nil
+            stopCarpetLock()
+            destroyBodyPos()
+            continue
+        end
+        if lockedPart or lockedModel then
+            if not partAlive() then
+                ShowNotification("AUTO BUY", "Reached base, scanning...")
+                pcall(refreshConveyor)
+                lockedTarget = nil
+                lockedPart = nil
+                lockedModel = nil
+            end
+            continue
+        end
+        pcall(refreshConveyor)
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+        local radius = Config.AutoBuyRange or DETECT_RADIUS
+        local best, bestDist = nil, math.huge
+        for _, entry in ipairs(SharedState.ConveyorAnimals) do
+            if entry.prompt and entry.prompt.Parent and entry.prompt.Enabled and entry.part and entry.part.Parent then
+                local d = (hrp.Position - entry.part.Position).Magnitude
+                if d <= radius and d < bestDist then
+                    bestDist = d
+                    best = entry
+                end
+            end
+        end
+        if best then
+            lockedTarget = best
+            lockedPart = best.part
+            lockedModel = best.model or best.part.Parent
+            ShowNotification("AUTO BUY", "Locked: " .. best.name)
+            startCarpetLock()
+        end
+    end
+end)
+
+_G.AutoBuyOnToggle = function(active)
+    if active then
+        if _G.refreshConveyor then pcall(_G.refreshConveyor) end
+        startCarpetLock()
+    else
+        stopCarpetLock()
+        destroyBodyPos()
+    end
+end
+end -- END AUTO BUY SCOPE
+
+-- ============================================================
+-- ============================================================
+
+function hasExclamation(target)
+    for _, d in ipairs(target:GetDescendants()) do
+        if d:IsA("BillboardGui") then
+            -- check EVERY label: the "!" isn't always in the first TextLabel
+            for _, l in ipairs(d:GetDescendants()) do
+                if (l:IsA("TextLabel") or l:IsA("TextBox")) and tostring(l.Text):find("!") then return true end
+            end
+        end
+    end
+    return false
+end
+
+do -- AUTO DESTROY TURRETS (do-block: locals stay off the main chunk's register cap)
+    local sentryCache, lastSentryScan = {}, 0
+    local swinging = false
+    local function findBat(char)
+        local function scan(cont)
+            if not cont then return nil end
+            for _, t in ipairs(cont:GetChildren()) do
+                if t:IsA("Tool") and t.Name:lower():find("bat", 1, true) then return t end
+            end
+        end
+        return scan(char) or scan(player:FindFirstChild("Backpack"))
+    end
+    task.spawn(function()
+        while true do task.wait(0.1)
+            -- Paused while stealing/carrying or mid-TP (equipping the bat there
+            -- would drop the brainrot / break the flight) -- otherwise always on
+            if Config.AutoDestroyTurrets and LocalPlayer:GetAttribute("Stealing") ~= true
+                and not _G._isTpMoving then
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hrp and hum and hum.Health > 0 then
+                    -- sentry list refreshed 1x/s (full-workspace GetDescendants at
+                    -- 10x/s was an FPS sink); distance check stays at 10x/s
+                    local now = os.clock()
+                    if now - lastSentryScan > 1 then
+                        lastSentryScan = now
+                        sentryCache = {}
+                        for _, inst in ipairs(Workspace:GetDescendants()) do
+                            if inst.Name:match("^Sentry_") then sentryCache[#sentryCache + 1] = inst end
+                        end
+                    end
+                    -- INFINITE RANGE: every sentry on the map is a target, aggro'd
+                    -- ("!") or not -- alerted ones first, then the nearest one
+                    local closest, shortestDist = nil, math.huge
+                    local closestCalm, shortestCalm = nil, math.huge
+                    for _, inst in ipairs(sentryCache) do
+                        if inst.Parent then
+                            local root = inst:IsA("BasePart") and inst or inst:FindFirstChildWhichIsA("BasePart", true)
+                            if root then
+                                local dist = (hrp.Position - root.Position).Magnitude
+                                if hasExclamation(inst) then
+                                    if dist < shortestDist then shortestDist = dist; closest = inst end
+                                else
+                                    if dist < shortestCalm then shortestCalm = dist; closestCalm = inst end
+                                end
+                            end
+                        end
+                    end
+                    if not closest then closest = closestCalm end
+                    if closest and not swinging then
+                        swinging = true
+                        task.spawn(function()
+                            pcall(function()
+                                -- make the turret visible + pull it in front of the player
+                                for _, d in ipairs(closest:GetDescendants()) do
+                                    if d:IsA("BasePart") then d.Transparency = 0.5; d.CanCollide = false end
+                                end
+                                local targetCF = CFrame.new(hrp.Position + hrp.CFrame.LookVector * 4, hrp.Position)
+                                if closest:IsA("Model") then closest:PivotTo(targetCF)
+                                elseif closest:IsA("BasePart") then closest.CFrame = targetCF end
+                                local bat = findBat(char)
+                                if bat then
+                                    if bat.Parent ~= char then
+                                        -- RE-EQUIP LOOP: invisible steal / TP tool
+                                        -- managers can unequip us -- keep retrying
+                                        -- for up to 1s instead of a single attempt
+                                        local t0 = os.clock()
+                                        while bat.Parent ~= char and os.clock() - t0 < 1 do
+                                            pcall(function() hum:EquipTool(bat) end)
+                                            task.wait(0.08)
+                                        end
+                                    end
+                                    -- several swings: a single one often misses while
+                                    -- the repositioned turret settles
+                                    for _ = 1, 4 do
+                                        if not (closest and closest.Parent) then break end
+                                        if bat.Parent ~= char then pcall(function() hum:EquipTool(bat) end) end
+                                        pcall(function() bat:Activate() end)
+                                        task.wait(0.12)
+                                    end
+                                end
+                            end)
+                            swinging = false
+                        end)
+                    end
+                end
+            end
+        end
+    end)
+end
+-- REMOTE SELL (removed from UI)
+pcall(function()
+    local old = playerGui:FindFirstChild("Mynxx_RemoteSell")
+    if old then old:Destroy() end
+end)
+_G.toggleRemoteSell = function() end
+
+-- ============================================================
+-- GUI HELPERS
+-- ============================================================
+main,mainBody,tabBar,sidebarNav,sidebarProfile,bottomBar,fpsText = nil,nil,nil,nil,nil,nil,nil
+panels,panelSetters,tabButtons={},{},{}
+actionSettingsPanel,actionSettingsBody,tpSpeedSettingsPanel,tpSpeedSettingsBody = nil,nil,nil,nil
+BoundToggles={}
+
+stealProgressBarGui = nil
+
+-- Pre-declare helper functions made global to free local registers in outer scope
+
+_G.ShowStealProgressBar = function(targetName, duration)
+    local ExploitGui = (gethui and gethui()) or game:GetService("CoreGui")
+    
+    if stealProgressBarGui then
+        pcall(function() stealProgressBarGui:Destroy() end)
+    end
+    
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "Mynxx_StealProgressBar"
+    sg.ResetOnSpawn = false
+    sg.Parent = ExploitGui
+    stealProgressBarGui = sg
+    
+    local barWidth = 270
+    local barHeight = 50
+    
+    local container = Instance.new("Frame")
+    container.Size = UDim2.fromOffset(barWidth, barHeight)
+    container.Position = UDim2.new(0.5, -barWidth/2, 1, -190)
+    container.BackgroundColor3 = Theme.Background
+    container.BackgroundTransparency = UITransparency.Progress
+    container.BorderSizePixel = 0
+    container.Parent = registerScreenGui(sg)
+    corner(container, 12)
+    addOutline(container)
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0.6, -14, 0, 16)
+    title.Position = UDim2.new(0, 14, 0, 8)
+    title.BackgroundTransparency = 1
+    title.Text = "âš¡ STEALING: " .. (targetName or "Brainrot"):upper()
+    title.TextColor3 = Theme.Text
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 9.5
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = container
+    
+    local pctLabel = Instance.new("TextLabel")
+    pctLabel.Size = UDim2.new(0.4, -14, 0, 16)
+    pctLabel.Position = UDim2.new(0.6, 0, 0, 8)
+    pctLabel.BackgroundTransparency = 1
+    pctLabel.Text = "0%"
+    pctLabel.TextColor3 = Theme.Text
+    pctLabel.Font = Enum.Font.GothamBold
+    pctLabel.TextSize = 10
+    pctLabel.TextXAlignment = Enum.TextXAlignment.Right
+    pctLabel.Parent = container
+    
+    local track = Instance.new("Frame")
+    track.Size = UDim2.new(1, -28, 0, 6)
+    track.Position = UDim2.new(0, 14, 0, 30)
+    track.BackgroundColor3 = Theme.SliderBg
+    track.BorderSizePixel = 0
+    track.Parent = container
+    corner(track, 3)
+    stroke(track, Theme.Stroke, 1, 0.1)
+    
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new(0, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    fill.BorderSizePixel = 0
+    fill.Parent = track
+    corner(fill, 3)
+    
+    local fillGrad = Instance.new("UIGradient", fill)
+    fillGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 208)),
+    })
+    
+    local safeDuration = tonumber(duration) or 5
+    if safeDuration <= 0.01 then safeDuration = 5 end
+    local startTick = tick()
+    
+    task.spawn(function()
+        while sg and sg.Parent do
+            local elapsed = tick() - startTick
+            local t = math.clamp(elapsed / safeDuration, 0, 1)
+            local ratio = 1 - (1 - t)^3
+            
+            pcall(function()
+                pctLabel.Text = math.floor(ratio * 100) .. "%"
+                fill.Size = UDim2.new(ratio, 0, 1, 0)
+            end)
+            
+            if t >= 1 then break end
+            task.wait()
+        end
+    end)
+end
+
+_G.HideStealProgressBar = function()
+    local targetGui = stealProgressBarGui
+    if targetGui then
+        stealProgressBarGui = nil
+        pcall(function()
+            local container = targetGui:FindFirstChildWhichIsA("Frame")
+            if container then
+                tw(container, {BackgroundTransparency = 1}, 0.15)
+                for _, child in ipairs(container:GetDescendants()) do
+                    if child:IsA("TextLabel") then
+                        tw(child, {TextTransparency = 1}, 0.15)
+                    elseif child:IsA("Frame") then
+                        tw(child, {BackgroundTransparency = 1}, 0.15)
+                    elseif child:IsA("UIStroke") then
+                        tw(child, {Transparency = 1}, 0.15)
+                    end
+                end
+                task.wait(0.16)
+            end
+            targetGui:Destroy()
+        end)
+    end
+end
+
+-- Assign helper implementations to pre-declared outer local variables
+corner = function(o,r) local c=Instance.new("UICorner"); c.CornerRadius=UDim.new(0,r); c.Parent=o; return c end
+stroke = function(o,col,th,tr) local s=Instance.new("UIStroke"); s.Color=col or Theme.Stroke; s.Thickness=th or 1; s.Transparency=tr or 0; s.ApplyStrokeMode=Enum.ApplyStrokeMode.Border; s.Parent=o; return s end
+tw = function(o,p,t) TweenService:Create(o,TweenInfo.new(t or 0.14,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),p):Play() end
+addOutline = function(f) local o=Instance.new("UIStroke"); o.Color=Theme.Stroke; o.Thickness=1; o.Transparency=UITransparency.Outline; o.ApplyStrokeMode=Enum.ApplyStrokeMode.Border; o.Parent=f; return o end
+function clearBody(body) for _,c in ipairs(body:GetChildren()) do if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end end end
+
+function openAnim(f) if not f then return end; local us=f:FindFirstChild("MynxxScale") or Instance.new("UIScale"); us.Name="MynxxScale"; us.Parent=f
+    local tgt=f.Position; f.Visible=true; us.Scale=0.92; f.Position=UDim2.new(tgt.X.Scale,tgt.X.Offset,tgt.Y.Scale,tgt.Y.Offset+18); tw(us,{Scale=1},0.20); tw(f,{Position=tgt},0.20) end
+function closeAnim(f) if not f then return end; f.Visible = false end
+
+makeDraggable = function(frame,handle,saveName) local dragging,dragStart,startPos=false,nil,nil
+    handle.InputBegan:Connect(function(i) if UI.Locked then return end; if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then dragging=true; dragStart=i.Position; startPos=frame.Position end end)
+    UIS.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then if dragging and saveName then rememberPosition(saveName,frame) end; dragging=false end end)
+    UIS.InputChanged:Connect(function(i) if dragging and not UI.Locked and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+        local d=i.Position-dragStart
+        local scale = getGlobalScale()
+        frame.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+(d.X/scale),startPos.Y.Scale,startPos.Y.Offset+(d.Y/scale))
+    end end)
+end
+
+makeResizable = function(frame, minSize, panelName)
+    -- Outer visible grip (bigger on touch)
+    local gripSize = UIS.TouchEnabled and 44 or 22
+    local h = Instance.new("TextButton")
+    h.Name = "ResizeGrip"
+    h.Size = UDim2.new(0, gripSize, 0, gripSize)
+    h.Position = UDim2.new(1, 
